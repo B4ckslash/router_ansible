@@ -3,4 +3,4 @@
   hosts: "{{ target }}"
   remote_user: root
   roles:
-    - setup_dhcp
+    - dhcp
