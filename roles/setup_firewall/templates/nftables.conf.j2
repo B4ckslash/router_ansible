@@ -1,0 +1,188 @@
+#!/sbin/nft
+flush ruleset
+
+## MANAGED VIA ANSIBLE! DO NOT CHANGE MANUALLY! ##
+
+table inet default_filter {
+	#ct timeout sip-extended {
+	#	protocol udp;
+	#	policy = {replied: 180, unreplied: 45};
+	#}
+
+	ct helper sip-5060 {
+		type "sip" protocol udp;
+	}
+	
+	ct helper tftp {
+		type "tftp" protocol udp;
+	}
+
+    {% if input is defined %}
+    {% for iface in input %}
+    chain {{ iface.iface }}_input {
+    {% for entry in iface.tcp %}
+        {% if entry.port is defined %}
+            tcp dport {{ entry.port }} accept{% if entry.comment is defined%} comment "{{ entry.comment }}"{% endif %}; 
+        {% else %}
+            tcp dport {{ entry }} accept; 
+        {% endif %}
+    {% endfor %}
+    {% for entry in iface.udp %}
+        {% if entry.port is defined %}
+            udp dport {{ entry.port }} accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
+        {% else %}
+            udp dport {{ entry }} accept; 
+        {% endif %}
+    {% endfor %}
+	}
+
+    {% endfor %}
+    {% endif %}
+
+	chain input {
+		type filter hook input priority 0; policy drop;
+
+		iif lo accept;
+		ct state established, related accept;
+
+		ip protocol icmp icmp type {
+			echo-reply, destination-unreachable, redirect, echo-request
+		} accept
+		ip6 nexthdr icmpv6 accept;
+
+    {% if input is defined %}
+        {% for iface in input %}
+            iifname {{ iface.iface }} jump {{ iface.iface }}_input;
+        {% endfor %}
+    {% endif %}
+
+    {% if vrrp_configs is defined %}
+        {% for vrrp in vrrp_configs %}
+            iifname {{ vrrp.interface }} ip protocol 112 accept;
+        {% endfor %}
+    {% endif %}
+		iifname lan.unifi_mgmt accept;
+	}
+
+    {% if forward is defined %}
+    {% for iface in forward %}
+    chain {{ iface.iface }}_fwd {
+        {% if iface.blanket_dest_ips is defined %}
+            {% for ip in iface.blanket_dest_ips %}
+                ip daddr {{ ip }} accept;
+            {% endfor %}
+        {% endif %}
+        {% if iface.blanket_src_ips is defined %}
+            {% for ip in iface.blanket_src_ips %}
+                ip saddr {{ ip }} accept;
+            {% endfor %}
+        {% endif %}
+        {% if iface.tcp is defined %}
+            {% for entry in iface.tcp %}
+                {% if entry.port is defined %}
+                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}tcp dport {{ entry.port }} {% if entry.counter is true%}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
+                {% else %}
+                    tcp dport {{ entry }} accept;
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if iface.udp is defined %}
+            {% for entry in iface.udp %}
+                {% if entry.port is defined %}
+                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}udp dport {{ entry.port }} {% if entry.counter is true %}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
+                {% else %}
+                    udp dport {{ entry }} accept;
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if iface.allow_internet is true%}
+            oifname ppp0 ct state new accept;
+        {% endif %}
+	}
+    {% endfor %}
+    {% endif %}
+
+	chain forward {
+		type filter hook forward priority 0; policy drop;
+
+
+    {% if forward is defined %}
+    {% for iface in forward %}
+        iifname {{ iface.iface }} jump {{ iface.iface }}_fwd;
+    {% endfor %}
+    {% endif %}
+		ip saddr 10.1.1.49 ip daddr { 10.0.0.0/8, 192.168.0.0/16 } accept;
+		ct state established, related accept;
+	}
+
+	chain prerouting {
+		type filter hook prerouting priority 0;
+		udp dport 5060 ct helper set "sip-5060"; #ct timeout set "sip-extended";
+		udp dport 69 ct helper set "tftp";
+	}
+
+	chain output {
+		type filter hook output priority 0; policy accept;
+	}
+}
+
+table ip default_nat {
+    {% if nat is defined %}
+    {% for iface in nat %}
+        chain {{ iface.iface }}_nat {
+            {% if iface.tcp is defined %}
+                {% for entry in iface.tcp %}
+                    {% if entry.ip_daddr is defined %}ip daddr {{ entry.ip_daddr}} {% endif %}tcp dport {{ entry.dport }} dnat {{ entry.dest_ip }} {% if entry.comment is defined%} comment "{{ entry.comment }}" {% endif %};
+                {% endfor %}
+            {% endif %}
+            {% if iface.udp is defined %}
+                {% for entry in iface.udp %}
+                    {% if entry.ip_daddr is defined %}ip daddr {{ entry.ip_daddr}} {% endif %}udp dport {{ entry.dport }} dnat {{ entry.dest_ip }} {% if entry.comment is defined %} comment "{{ entry.comment }}" {% endif %};
+                {% endfor %}
+            {% endif %}
+    }
+    {% endfor %}
+    {% endif %}
+    {% if enable_trace %}
+	chain tracing {
+		type filter hook prerouting priority -301; policy accept;
+		meta nftrace set 1;
+    }
+    {% endif %}
+    {% if nat is defined %}
+	chain prerouting {
+		type nat hook prerouting priority 0; policy accept;
+
+    {% for iface in nat %}
+        iifname {{ iface.iface }} jump {{ iface.iface }}_nat;
+    {% endfor %}
+    }
+    {% endif %}
+
+	chain output {
+		type nat hook output priority 0; policy accept;
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority 100; policy accept;
+		oifname ppp0 masquerade;
+	}
+}
+
+table ip ipv4_filter{
+	chain tcp_mangle {
+		type filter hook forward priority mangle;
+		oifname ppp0 tcp flags syn tcp option maxseg size set rt mtu;
+	}
+
+	chain out_tcp_mangle {
+		type filter hook output priority mangle;
+		oifname ppp0 tcp flags syn tcp option maxseg size set rt mtu;
+	}
+}
+
+table ip fail2ban {
+	chain input {
+		type filter hook input priority -100;
+	}
+}

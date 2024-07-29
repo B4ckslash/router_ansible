@@ -1,0 +1,6 @@
+---
+- name: Setup keepalived
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - keepalived

@@ -1,0 +1,6 @@
+---
+- name: Router network setup
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - configure_router_networks

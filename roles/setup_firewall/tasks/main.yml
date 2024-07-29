@@ -1,0 +1,30 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    package: nftables
+    state: present
+
+- name: Deploy firewall config
+  ansible.builtin.template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: "0644"
+    trim_blocks: true
+    lstrip_blocks: true
+  notify: Reload firewall
+  tags:
+    - config
+
+- name: Copy sysctl config
+  ansible.builtin.copy:
+    src: sysctl.conf
+    dest: /etc/sysctl.d/sysctl.conf
+    mode: "0644"
+  tags:
+    - sysctl
+
+- name: Enable & run nftables
+  ansible.builtin.service:
+    name: nftables
+    enabled: true
+    state: started

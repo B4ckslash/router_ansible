@@ -1,0 +1,12 @@
+---
+- name: Update packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: safe
+
+- name: Autoremove packages
+  ansible.builtin.apt:
+    autoremove: true
+  tags:
+    - autoremove
+    - never

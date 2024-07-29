@@ -1,0 +1,14 @@
+routers:
+  hosts:
+    #    router1:
+    #      ansible_host: 10.1.1.1
+    #      system_hostname: locke
+    #      lan_mac_address: e4:5f:01:39:7b:dd
+    #      ip_suffix: 20
+    router2:
+      ansible_host: 10.1.1.30
+      system_hostname: thedentist
+      lan_mac_address: e4:5f:01:38:30:31
+      ip_suffix: 30
+      vrrp_role: MASTER
+      vrrp_priority: 255

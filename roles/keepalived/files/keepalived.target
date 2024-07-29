@@ -1,0 +1,3 @@
+[Unit]
+Description=Collection of services that get started when keepalived is MASTER
+PartOf=keepalived.service

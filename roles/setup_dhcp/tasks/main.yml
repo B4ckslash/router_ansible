@@ -1,0 +1,59 @@
+---
+- name: Ensure a DHCP server is installed
+  ansible.builtin.apt:
+    name: isc-dhcp-server
+    state: present
+
+- name: Copy service file
+  ansible.builtin.copy:
+    src: dhcpd@.service
+    dest: /etc/systemd/system/
+    mode: "0644"
+  notify: Restart DHCP server
+
+- name: Mask auto-generated unit
+  ansible.builtin.systemd_service:
+    name: isc-dhcp-server
+    masked: true
+
+- name: Copy configuration files
+  ansible.builtin.copy:
+    src: dhcp/
+    dest: /etc/dhcp/
+    mode: "0755"
+  notify: Restart DHCP server
+  tags:
+    - config
+
+- name: Ensure lease files are present
+  ansible.builtin.file:
+    path: "/var/lib/dhcp/{{ item }}"
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    mode: "0644"
+  loop: "{{ dhcp.ifaces }}"
+
+- name: Modify AppArmor permissions for PID file
+  ansible.builtin.lineinfile:
+    path: /etc/apparmor.d/usr.sbin.dhcpd
+    line: " /{,var/}run/{,dhcp-server/}dhcpd{,6}*.pid rw,"
+    search_string: "  /{,var/}run/{,dhcp-server/}dhcpd{,6}.pid rw,"
+    state: present
+  notify: Reload AppArmor dhcpd profile
+
+- name: Modify AppArmor permissions for leases file
+  ansible.builtin.lineinfile:
+    path: /etc/apparmor.d/usr.sbin.dhcpd
+    line: "  /var/lib/dhcp/dhcpd{,6}*.leases* lrw,"
+    search_string: "  /var/lib/dhcp/dhcpd{,6}.leases* lrw,"
+    state: present
+  notify: Reload AppArmor dhcpd profile
+
+- name: Enable DHCP service
+  ansible.builtin.systemd_service:
+    name: "dhcpd@{{ item }}.service"
+    enabled: true
+    daemon_reload: true
+  loop: "{{ dhcp.ifaces }}"
+  notify: Restart DHCP server

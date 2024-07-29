@@ -1,0 +1,11 @@
+[Unit]
+Description=PPP link to %I
+Requires=systemd-networkd.service
+After=systemd-networkd.service
+
+[Service]
+ExecStart=/usr/sbin/pppd call %I nodetach
+ExecStop=/usr/bin/poff %I
+
+[Install]
+WantedBy=multi-user.target

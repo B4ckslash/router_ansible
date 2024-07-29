@@ -1,0 +1,19 @@
+{%if vrrp_configs is defined %}
+{%for vrrp in vrrp_configs %}
+vrrp_instance VI_{{ vrrp.id }} {
+    state {{ vrrp_role }}
+    interface {{ vrrp.interface }}
+    virtual_router_id {{ vrrp.id }}
+    priority {{ vrrp_priority }}
+    advert_int {{ vrrp.adv_interval }}
+    authentication {
+        auth_type PASS
+        auth_pass {{ vrrp.pass }}
+    }
+    virtual_ipaddress {
+        {{ vrrp.ip }}
+    }
+    notify /var/lib/keepalived/{{ vrrp_notify_script_name }}
+}
+{%endfor%}
+{%endif%}

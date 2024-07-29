@@ -1,0 +1,49 @@
+---
+- name: Create systemd-timesyncd clock file
+  ansible.builtin.file:
+    path: /var/lib/systemd/timesync/clock
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    mode: "0644"
+  tags:
+    - ntp
+
+- name: Create root SSH dir
+  ansible.builtin.file:
+    path: "{{ ssh_dir }}"
+    state: directory
+    mode: "0700"
+  tags:
+    - ssh
+
+- name: Copy PBX SSH key
+  ansible.builtin.copy:
+    src: pbx.enc
+    dest: "{{ ssh_dir }}/pbx"
+    mode: "0600"
+  tags:
+    - pbx
+
+- name: Create resolv.conf copy cronjob
+  ansible.builtin.cron:
+    name: PBX copy
+    hour: 4
+    minute: 13
+    job: scp -i {{ ssh_dir }}/pbx /etc/ppp/resolv.conf piadmin@{{ pbx_ip }}:tkom.dns
+  tags:
+    - pbx
+    - cron
+  notify: Restart cron
+
+- name: Create DMZ wakeonlan cronjobs
+  ansible.builtin.cron:
+    name: "WakeOnLan {{ item.name }}"
+    weekday: "{{ item.weekday }}"
+    hour: "{{ item.hour }}"
+    minute: "{{ item.minute }}"
+    job: wakeonlan -i 10.1.102.255 68:05:ca:b5:fd:60
+  loop: "{{ dmz_wakeonlan_cronjobs }}"
+  tags:
+    - cron
+  notify: Restart cron

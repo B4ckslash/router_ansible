@@ -1,0 +1,13 @@
+[Match]
+MACAddress={{ lan_mac_address }}
+Type=!vlan
+
+[Network]
+{% if vlans is defined %}
+{% for vlan in vlans %}
+VLAN=lan.{{ vlan.name }}
+{% endfor %}
+{% endif %}
+
+[Address]
+Address=10.1.1.{{ ip_suffix }}/24

@@ -1,0 +1,11 @@
+[Unit]
+Description=ISC DHCP server
+After=network-online.target
+
+[Service]
+Type=forking
+ExecStart=dhcpd -4 -cf /etc/dhcp/dhcpd-%I.conf -pf /run/dhcpd-%I.pid -lf /var/lib/dhcp/dhcpd-%I.leases %I
+PIDFile=dhcpd-%I.pid
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,130 @@
+---
+- name: Install pppd
+  ansible.builtin.apt:
+    package: ppp
+    state: present
+
+- name: Include Wireguard
+  ansible.builtin.include_tasks:
+    file: "wireguard.yml"
+    apply:
+      tags:
+        - wireguard
+  tags:
+    - wireguard
+
+- name: Create network VLAN netdevs for lan
+  ansible.builtin.template:
+    src: "vlan.netdev.j2"
+    dest: "/etc/systemd/network/20-lan.{{ item.name }}.netdev"
+    lstrip_blocks: true
+    mode: "0644"
+  loop: "{{ vlans }}"
+  notify: Reload network
+  tags:
+    - net_config
+
+- name: Create network VLAN networks for lan
+  ansible.builtin.template:
+    src: "vlan.network.j2"
+    dest: "/etc/systemd/network/20-lan.{{ item.name }}.network"
+    lstrip_blocks: true
+    mode: "0644"
+  loop: "{{ vlans }}"
+  notify: Reload network
+  tags:
+    - net_config
+
+- name: Create network config for lan
+  ansible.builtin.template:
+    src: lan.network.j2
+    dest: /etc/systemd/network/10-lan.network
+    lstrip_blocks: true
+    mode: "0644"
+  notify: Reload network
+  tags:
+    - net_config
+
+- name: Remove temporary network for lan
+  ansible.builtin.file:
+    path: /etc/systemd/network/temp-lan.network
+    state: absent
+
+- name: Copy network config for wan
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/network/{{ item }}"
+    mode: "0644"
+  loop:
+    - wan.7.netdev
+    - wan.network
+    - wan.7.network
+  notify: Reload network
+  tags:
+    - net_config
+
+- name: Copy pppd configuration
+  ansible.builtin.copy:
+    src: ppp-telekom
+    dest: /etc/ppp/peers/telekom
+    mode: "0644"
+  notify: Restart pppd
+  tags:
+    - ppp_config
+
+- name: Copy pppd systemd services
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - ppp@.service
+    - ppp-redial-telekom.service
+    - ppp-redial-telekom.timer
+  notify:
+    - Reload systemd
+    - Restart pppd
+  tags:
+    - ppp_config
+
+- name: Create ppp@telekom override dir
+  ansible.builtin.file:
+    path: /etc/systemd/system/ppp@telekom.service.d
+    state: directory
+    mode: "0755"
+  tags:
+    - ppp_config
+
+- name: Copy override file
+  ansible.builtin.copy:
+    src: ppp_telekom_override.conf
+    dest: /etc/systemd/system/ppp@telekom.service.d/override.conf
+    mode: "0644"
+  tags:
+    - ppp_config
+
+- name: Enable ppp@telekom service
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - ppp@telekom
+    - ppp-redial-telekom.timer
+  tags:
+    - ppp_config
+
+- name: Add udev rules for lan
+  ansible.builtin.template:
+    src: 70-net-name-lan-custom.rules.j2
+    dest: /etc/udev/rules.d/70-net-name-lan-custom.rules
+    mode: "0644"
+  tags:
+    - net-setup
+
+- name: Add udev rules for wan
+  ansible.builtin.copy:
+    src: 76-net-name-wan-custom.rules
+    dest: /etc/udev/rules.d/81-net-name-wan-custom.rules
+    mode: "0644"
+  tags:
+    - net-setup

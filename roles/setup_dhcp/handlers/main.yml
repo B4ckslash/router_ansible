@@ -1,0 +1,12 @@
+---
+- name: Reload AppArmor dhcpd profile
+  ansible.builtin.command:
+    cmd: "apparmor_parser -r /etc/apparmor.d/usr.sbin.dhcpd"
+  changed_when: true
+
+- name: Restart DHCP server
+  ansible.builtin.systemd_service:
+    name: dhcpd@{{ item }}
+    state: restarted
+    daemon_reload: true
+  loop: "{{ dhcp.ifaces }}"

@@ -1,0 +1,1 @@
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="{{ lan_mac_address }}", ENV{DEVTYPE}!="vlan", NAME="lan"

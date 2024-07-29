@@ -1,0 +1,8 @@
+[Unit]
+Description=Redial PPP connection
+Wants=dhcpcd@ppp0.service
+Before=dhcpcd@ppp0.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart ppp@telekom.service

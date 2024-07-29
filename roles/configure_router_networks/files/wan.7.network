@@ -1,0 +1,11 @@
+[Match]
+Name=wan.7
+Type=vlan
+
+[Network]
+Description=VLAN 7 on wan
+LinkLocalAddressing=no
+LLDP=no
+EmitLLDMP=no
+IPv6AcceptRA=no
+IPv6SendRA=no

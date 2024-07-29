@@ -1,0 +1,6 @@
+---
+- name: Update packages
+  hosts: routers
+  remote_user: root
+  roles:
+    - apt

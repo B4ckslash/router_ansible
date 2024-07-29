@@ -1,0 +1,28 @@
+---
+- name: Disable DHCP services
+  ansible.builtin.systemd_service:
+    name: dhcpd@{{ item }}.service
+    enabled: false
+    state: stopped
+  loop: "{{ dhcp.ifaces }}"
+
+- name: Create systemd override dirs for DHCP
+  ansible.builtin.file:
+    path: /etc/systemd/system/dhcpd@{{ item }}.service.d
+    state: directory
+    mode: "0755"
+  loop: "{{ dhcp.ifaces }}"
+
+- name: Copy systemd overrides
+  ansible.builtin.copy:
+    src: override.conf
+    dest: /etc/systemd/system/dhcpd@{{ item }}.service.d/override.conf
+    mode: "0644"
+  loop: "{{ dhcp.ifaces }}"
+
+- name: Re-Enable DHCP services
+  ansible.builtin.systemd_service:
+    name: dhcpd@{{ item }}.service
+    enabled: true
+    daemon_reload: true
+  loop: "{{ dhcp.ifaces }}"

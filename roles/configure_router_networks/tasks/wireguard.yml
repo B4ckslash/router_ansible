@@ -1,0 +1,24 @@
+---
+- name: Ensure wireguard is installed
+  ansible.builtin.apt:
+    package: wireguard
+    state: present
+
+- name: Ensure wireguard save dir is present
+  ansible.builtin.file:
+    path: "{{ wg_save_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy wg0 config
+  ansible.builtin.copy:
+    src: wg0.conf
+    dest: /etc/wireguard/
+    mode: "0644"
+  notify: Restart wg-quick@wg0
+
+- name: Enable wg-quick@wg0 service
+  ansible.builtin.service:
+    name: "wg-quick@wg0.service"
+    enabled: true
+  notify: Restart wg-quick@wg0

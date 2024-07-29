@@ -1,0 +1,7 @@
+---
+- name: Reload firewall
+  ansible.builtin.command:
+    cmd: "nft -f /etc/nftables.conf"
+  register: nft_output
+  changed_when: true
+  failed_when: nft_output.rc != 0

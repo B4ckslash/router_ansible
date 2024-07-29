@@ -1,0 +1,13 @@
+[Match]
+Name=wan
+
+[Link]
+RequiredForOnline=no
+
+[Network]
+VLAN=wan.7
+LinkLocalAddressing=no
+LLDP=no
+EmitLLDMP=no
+IPv6AcceptRA=no
+IPv6SendRA=no
