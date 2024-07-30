@@ -15,13 +15,17 @@
   tags:
     - config
 
-- name: Copy sysctl config
-  ansible.builtin.copy:
-    src: sysctl.conf
-    dest: /etc/sysctl.d/sysctl.conf
-    mode: "0644"
+- name: Enable IP forwarding
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: 1
+    sysctl_set: true
+    sysctl_file: "/etc/sysctl.d/ansible.conf"
   tags:
     - sysctl
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
 
 - name: Enable & run nftables
   ansible.builtin.service:
