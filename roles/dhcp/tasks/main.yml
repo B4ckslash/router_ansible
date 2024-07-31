@@ -27,7 +27,7 @@
 
 - name: Ensure lease files are present
   ansible.builtin.file:
-    path: "/var/lib/dhcp/{{ item }}"
+    path: "/var/lib/dhcp/dhcpd-{{ item }}.leases"
     state: touch
     access_time: preserve
     modification_time: preserve
