@@ -1,6 +1,6 @@
 ---
-- name: Setup system
+- name: Run miscellaneous tasks
   hosts: "{{ target }}"
   remote_user: root
   roles:
-    - system
+    - misc
