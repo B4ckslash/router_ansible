@@ -1,8 +1,11 @@
 ---
-- name: Install pppd
+- name: Install required packages
   ansible.builtin.apt:
-    package: ppp
+    package: "{{ item }}"
     state: present
+  loop:
+    - ppp
+    - firmware-realtek
 
 - name: Include Wireguard
   ansible.builtin.include_tasks:
