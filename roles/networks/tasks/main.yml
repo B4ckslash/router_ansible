@@ -59,12 +59,25 @@
     dest: "/etc/systemd/network/{{ item }}"
     mode: "0644"
   loop:
-    - wan.7.netdev
     - wan.network
+    - wan.7.netdev
     - wan.7.network
   notify: Reload network
   tags:
     - net_config
+
+- name: Disable default unneeded networking services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+  loop:
+    - networking.service
+    - wpa_supplicant.service
+
+- name: Enable systemd-networkd
+  ansible.builtin.systemd_service:
+    name: systemd-networkd
+    enabled: true
 
 - name: Copy pppd configuration
   ansible.builtin.copy:
