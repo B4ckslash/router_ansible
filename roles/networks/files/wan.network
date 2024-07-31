@@ -8,6 +8,6 @@ RequiredForOnline=no
 VLAN=wan.7
 LinkLocalAddressing=no
 LLDP=no
-EmitLLDMP=no
+EmitLLDP=no
 IPv6AcceptRA=no
 IPv6SendRA=no
