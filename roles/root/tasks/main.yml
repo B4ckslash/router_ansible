@@ -1,0 +1,23 @@
+---
+- name: Deploy SSH key
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user_id }}"
+    state: present
+    key: "{{ item }}"
+  with_file:
+    - ssh_pubkey
+
+- name: Copy sshd config overrides
+  ansible.builtin.copy:
+    src: sshd_config_overrides
+    dest: /etc/ssh/sshd_config.d/pubkey_root.conf
+    mode: "0644"
+  notify:
+    - Restart sshd
+
+- name: Remove temporary overrides
+  ansible.builtin.file:
+    name: /etc/ssh/sshd_config.d/temp_root.conf
+    state: absent
+  notify:
+    - Restart sshd
