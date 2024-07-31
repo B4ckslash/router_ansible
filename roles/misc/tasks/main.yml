@@ -9,6 +9,10 @@
   tags:
     - ntp
 
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ system_hostname }}"
+
 - name: Create root SSH dir
   ansible.builtin.file:
     path: "{{ ssh_dir }}"
@@ -47,3 +51,8 @@
   tags:
     - cron
   notify: Restart cron
+
+- name: Mask bluetooth target
+  ansible.builtin.systemd_service:
+    name: bluetooth.target
+    masked: true
