@@ -1,0 +1,12 @@
+---
+- name: Run complete setup
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - root
+    - apt
+    - networks
+    - dhcp
+    - firewall
+    - keepalived
+    - misc
