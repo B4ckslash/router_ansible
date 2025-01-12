@@ -1,0 +1,19 @@
+---
+- name: Ensure ddclient is installed
+  ansible.builtin.apt:
+    name: ddclient
+    state: present
+
+- name: Deploy DDClient config
+  ansible.builtin.template:
+    src: ddclient.conf.j2
+    dest: /etc/ddclient.conf
+    mode: "0600"
+  notify: Restart ddclient
+  tags:
+    - config
+
+- name: Enable DDClient service
+  ansible.builtin.service:
+    name: ddclient
+    enabled: true

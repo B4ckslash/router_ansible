@@ -1,0 +1,6 @@
+---
+- name: Configure DDClient
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - ddclient
