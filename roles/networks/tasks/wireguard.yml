@@ -6,14 +6,14 @@
 
 - name: Ensure wireguard save dir is present
   ansible.builtin.file:
-    path: "{{ wg_save_path }}"
+    path: "{{ wireguard.save_path }}"
     state: directory
     mode: "0755"
 
 - name: Copy wg0 config
-  ansible.builtin.copy:
-    src: wg0.conf
-    dest: /etc/wireguard/
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
     mode: "0644"
   notify: Restart wg-quick@wg0
 

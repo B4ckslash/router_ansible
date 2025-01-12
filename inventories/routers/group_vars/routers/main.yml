@@ -1,5 +1,4 @@
 enable_trace: false
-wg_save_path: /var/lib/wireguard/
 vrrp_notify_script_name: notify_change.sh
 pbx_ip: 10.1.1.3
 ssh_dir: /root/.ssh
