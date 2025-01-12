@@ -19,3 +19,16 @@
   ansible.builtin.service:
     name: wg-quick@wg0
     state: restarted
+  notify: Print firewall status
+
+- name: Collect FW status
+  ansible.builtin.command:
+    cmd: "nft list ruleset"
+  register: nft_ruleset
+  changed_when: true
+  listen: Print firewall status
+
+- name: Print FW status
+  ansible.builtin.debug:
+    var: nft_ruleset.stdout_lines
+  listen: Print firewall status
