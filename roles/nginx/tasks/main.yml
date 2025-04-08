@@ -1,0 +1,34 @@
+---
+- name: Ensure nginx is installed
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Deploy nginx config
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/nginx/sites-available/
+    mode: "0600"
+  loop:
+    - status-page.conf
+    - dmz-proxy.conf
+  notify: Restart nginx
+  tags:
+    - config
+
+- name: Configure site symlinks
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ item }}
+    dest: /etc/nginx/sites-enabled/{{ item }}
+    mode: "0600"
+  loop:
+    - status-page.conf
+    - dmz-proxy.conf
+  notify: Restart nginx
+  tags:
+    - config
+
+- name: Enable nginx service
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
