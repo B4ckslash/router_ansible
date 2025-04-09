@@ -1,0 +1,7 @@
+---
+- name: Setup NGINX & HAProxy
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - haproxy
+    - nginx

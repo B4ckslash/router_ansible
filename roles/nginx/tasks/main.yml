@@ -6,12 +6,19 @@
 
 - name: Deploy nginx config
   ansible.builtin.template:
-    src: "{{ item }}"
-    dest: /etc/nginx/sites-available/
+    src: "{{ item }}.j2"
+    dest: /etc/nginx/sites-available/{{ item }}
     mode: "0600"
   loop:
     - status-page.conf
-    - dmz-proxy.conf
+  notify: Restart nginx
+  tags:
+    - config
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
   notify: Restart nginx
   tags:
     - config
@@ -20,10 +27,10 @@
   ansible.builtin.file:
     src: /etc/nginx/sites-available/{{ item }}
     dest: /etc/nginx/sites-enabled/{{ item }}
+    state: link
     mode: "0600"
   loop:
     - status-page.conf
-    - dmz-proxy.conf
   notify: Restart nginx
   tags:
     - config

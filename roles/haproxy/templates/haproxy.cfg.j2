@@ -1,0 +1,65 @@
+global
+  log /dev/log local0
+  log /dev/log local1 notice
+  chroot /var/lib/haproxy
+  stats socket /run/haproxy/admin.sock mode 660 level admin
+  stats timeout 30s
+  user haproxy
+  group haproxy
+  daemon
+  # generated 2025-04-09, Mozilla Guideline v5.7, HAProxy 2.6.12, OpenSSL 3.4.0, modern config
+  # https://ssl-config.mozilla.org/#server=haproxy&version=2.6.12&config=modern&openssl=3.4.0&guideline=5.7
+  # modern configuration
+  ssl-default-bind-curves X25519:prime256v1:secp384r1
+  ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+  ssl-default-bind-options prefer-client-ciphers ssl-min-ver TLSv1.3 no-tls-tickets
+
+  ssl-default-server-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+  ssl-default-server-options ssl-min-ver TLSv1.3 no-tls-tickets
+
+
+defaults
+  mode http
+  timeout client 10s
+  timeout connect 5s
+  timeout server 10s
+  timeout http-request 10s
+  log global
+  option httplog
+  option dontlognull
+  errorfile 400 /etc/haproxy/errors/400.http
+  errorfile 403 /etc/haproxy/errors/403.http
+  errorfile 408 /etc/haproxy/errors/408.http
+  errorfile 500 /etc/haproxy/errors/500.http
+  errorfile 502 /etc/haproxy/errors/502.http
+  errorfile 503 /etc/haproxy/errors/503.http
+  errorfile 504 /etc/haproxy/errors/504.http
+
+frontend hotw.club
+  bind :80
+  bind :443 ssl crt {{ ssl_cert_path }}
+  http-request redirect scheme https code 301 unless { ssl_fc }
+  http-request auth unless { http_auth(credentials) }
+  http-response set-header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload;"
+
+  use_backend letsencrypt if { path_beg /.well-known/acme-challenge/ }
+  use_backend api if { path_beg /api/ }
+  use_backend router if { hdr(host) -m dom {{ statuspage_domain }} }
+  default_backend dmz
+
+backend router
+  server router 127.0.0.1:8080
+
+backend api
+  server router_api 127.0.0.1:8081
+
+backend letsencrypt
+  server letsencrypt 127.0.0.1:8082
+
+backend dmz
+  server dmz 10.1.102.2:80
+
+userlist credentials
+{% for user in haproxy_users | default([]) %}
+  user {{ user.name }} password {{ user.pwd }}
+{% endfor %}

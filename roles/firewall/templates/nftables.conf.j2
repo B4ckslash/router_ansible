@@ -27,7 +27,7 @@ table inet default_filter {
             tcp dport {{ entry }} accept; 
         {% endif %}
     {% endfor %}
-    {% for entry in iface.udp %}
+    {% for entry in iface.udp | default([]) %}
         {% if entry.port is defined %}
             udp dport {{ entry.port }} accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
         {% else %}

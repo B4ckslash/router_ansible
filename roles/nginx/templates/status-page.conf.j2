@@ -1,0 +1,9 @@
+server {
+  listen 8080 default_server;
+  server_name {{ statuspage_domain }};
+  root /srv/www/services;
+  index index.html;
+  location / {
+    try_files $uri =404;
+  }
+}
