@@ -1,0 +1,43 @@
+---
+- name: Ensure python is installed
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3
+    - virtualenv
+
+- name: Ensure paths are available
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /srv/www/services
+    - /srv/api/
+
+- name: Copy backend
+  ansible.builtin.copy:
+    src: api/{{ item }}
+    dest: /srv/api/
+  loop:
+    - server.py
+    - servers.yml
+    - requirements.txt
+  tags:
+    - backend
+
+- name: Copy frontend
+  ansible.builtin.copy:
+    src: front/{{ item }}
+    dest: /srv/www/services/
+  loop:
+    - index.html
+    - assets
+  tags:
+    - frontend
+
+- name: Install python packages
+  ansible.builtin.pip:
+    chdir: /srv/api/
+    virtualenv: /srv/api/venv
+    requirements: requirements.txt

@@ -1,0 +1,6 @@
+---
+- name: Deploy status app
+  hosts: "{{ target }}"
+  remote_user: root
+  roles:
+    - services_page
