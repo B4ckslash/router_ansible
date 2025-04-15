@@ -11,16 +11,6 @@ ddclient_pass: !vault |
   32323665326234346538643133343237306334363566653666613764643836616363383737333763
   3030333131323238633835636231646564623935633864623635
 
-dmz_wakeonlan_cronjobs:
-  - name: Mon-Fri
-    weekday: 1-5
-    hour: 15
-    minute: 0
-  - name: Sat-Sun
-    weekday: 6-7
-    hour: 11
-    minute: 0
-
 vlans:
   - name: unifi_mgmt
     id: 100

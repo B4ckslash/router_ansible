@@ -45,18 +45,6 @@
     name: wakeonlan
     state: present
 
-- name: Create DMZ wakeonlan cronjobs
-  ansible.builtin.cron:
-    name: "WakeOnLan {{ item.name }}"
-    weekday: "{{ item.weekday }}"
-    hour: "{{ item.hour }}"
-    minute: "{{ item.minute }}"
-    job: wakeonlan -i 10.1.102.255 68:05:ca:b5:fd:60
-  loop: "{{ dmz_wakeonlan_cronjobs }}"
-  tags:
-    - cron
-  notify: Restart cron
-
 - name: Mask bluetooth target
   ansible.builtin.systemd_service:
     name: bluetooth.target
