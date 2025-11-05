@@ -1,0 +1,12 @@
+---
+- name: Minecraft Server
+  ip: "minecraft.hotw.club"
+  services:
+    - name: Minecraft
+      status_command: {{ mc_status_client_path }}/venv/bin/python {{ mc_status_client_path }}/client.py 89.58.13.255
+    - name: Minecraft Map
+      status_command: curl -s minecraft.hotw.club:80 > /dev/null
+      link: https://minecraft.hotw.club
+
+- name: TeamSpeak
+  ip: "5.45.106.158"

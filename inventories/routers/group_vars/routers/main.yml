@@ -1,4 +1,5 @@
 enable_trace: false
+mc_status_client_path: /srv/api/mc_status_client/
 vrrp_notify_script_name: notify_change.sh
 pbx_ip: 10.1.1.3
 ssh_dir: /root/.ssh

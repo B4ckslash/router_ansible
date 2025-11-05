@@ -1,11 +1,11 @@
 ---
-- name: Ensure python is installed
+- name: Ensure packages are present
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name:
+      - python3
+      - virtualenv
+      - curl
     state: present
-  loop:
-    - python3
-    - virtualenv
 
 - name: Ensure paths are available
   ansible.builtin.file:
@@ -21,7 +21,23 @@
     dest: /srv/api/
   loop:
     - server.py
-    - servers.yml
+    - requirements.txt
+  tags:
+    - backend
+
+- name: Deploy server config
+  ansible.builtin.template:
+    src: servers.yml.j2
+    dest: /srv/api/servers.yml
+  tags:
+    - backend
+
+- name: Copy status client
+  ansible.builtin.copy:
+    src: api/mc_status_client/{{ item }}
+    dest: "{{ mc_status_client_path }}/{{ item }}"
+  loop:
+    - client.py
     - requirements.txt
   tags:
     - backend
@@ -36,8 +52,18 @@
   tags:
     - frontend
 
-- name: Install python packages
+- name: Install Server python packages
   ansible.builtin.pip:
     chdir: /srv/api/
     virtualenv: /srv/api/venv
     requirements: requirements.txt
+  tags:
+    - backend
+
+- name: Install MC status client python packages
+  ansible.builtin.pip:
+    chdir: "{{ mc_status_client_path }}"
+    virtualenv: "{{ mc_status_client_path }}/venv"
+    requirements: requirements.txt
+  tags:
+    - backend
