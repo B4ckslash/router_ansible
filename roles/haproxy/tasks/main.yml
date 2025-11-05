@@ -10,6 +10,8 @@
     dest: "{{ ssl_cert_dir }}/fullchain.pem.key"
     state: link
     mode: "0600"
+  tags:
+    - config
 
 - name: Deploy haproxy config
   ansible.builtin.template:
