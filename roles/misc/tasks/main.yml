@@ -44,6 +44,15 @@
   ansible.builtin.apt:
     name: wakeonlan
     state: present
+  tags:
+    - pkg
+
+- name: Install unattended-upgrades
+  ansible.builtin.apt:
+    name: wakeonlan
+    state: present
+  tags:
+    - pkg
 
 - name: Mask bluetooth target
   ansible.builtin.systemd_service:
