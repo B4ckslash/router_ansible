@@ -80,7 +80,7 @@ table inet default_filter {
         {% if iface.tcp is defined %}
             {% for entry in iface.tcp %}
                 {% if entry.port is defined %}
-                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}tcp dport {{ entry.port }} {% if entry.counter is true%}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
+                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}tcp dport {{ entry.port }} {% if entry.counter|default(false) is true%}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
                 {% else %}
                     tcp dport {{ entry }} accept;
                 {% endif %}
@@ -89,13 +89,13 @@ table inet default_filter {
         {% if iface.udp is defined %}
             {% for entry in iface.udp %}
                 {% if entry.port is defined %}
-                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}udp dport {{ entry.port }} {% if entry.counter is true %}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
+                    {% if entry.saddr is defined %}ip saddr {{ entry.saddr }} {% endif %}{% if entry.daddr is defined %}ip daddr {{ entry.daddr }} {% endif %}udp dport {{ entry.port }} {% if entry.counter|default(false) is true%}counter {% endif %}accept{% if entry.comment is defined %} comment "{{ entry.comment }}"{% endif %}; 
                 {% else %}
                     udp dport {{ entry }} accept;
                 {% endif %}
             {% endfor %}
         {% endif %}
-        {% if iface.allow_internet is true%}
+        {% if iface.allow_internet|default(false) is true%}
             oifname ppp0 ct state new accept;
         {% endif %}
 	}
