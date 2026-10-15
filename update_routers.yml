@@ -1,6 +1,6 @@
 ---
 - name: Update packages
-  hosts: "{{ target }}"
+  hosts: "routers"
   remote_user: root
   roles:
     - apt

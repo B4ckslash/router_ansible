@@ -39,11 +39,11 @@ frontend hotw.club
   bind :80
   bind :443 ssl crt {{ ssl_cert_path }}
   http-request redirect scheme https code 301 unless { ssl_fc }
-  http-request auth unless { http_auth(credentials) }
+  http-request auth unless { hdr(host) -m dom {{paperless_domain}} } or { http_auth(credentials) } 
   http-response set-header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload;"
 
   use_backend letsencrypt if { path_beg /.well-known/acme-challenge/ }
-  use_backend api if { path_beg /api/ }
+  use_backend api if { hdr(host) -m dom {{statuspage_domain}} } { path_beg /api/ }
   use_backend router if { hdr(host) -m dom {{ statuspage_domain }} }
   default_backend dmz
 
@@ -57,6 +57,7 @@ backend letsencrypt
   server letsencrypt 127.0.0.1:8082
 
 backend dmz
+  http-request del-header Authorization
   server dmz 10.1.102.2:80
 
 userlist credentials
