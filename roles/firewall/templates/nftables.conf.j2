@@ -72,6 +72,9 @@ table inet default_filter {
                 ip daddr {{ ip }} accept;
             {% endfor %}
         {% endif %}
+        {% for iface in iface.blanket_dest_ifaces | default([]) %}
+                oifname {{ iface }} accept;
+        {% endfor %}
         {% if iface.blanket_src_ips is defined %}
             {% for ip in iface.blanket_src_ips %}
                 ip saddr {{ ip }} accept;
