@@ -25,10 +25,18 @@ ddclient_pass:
 vlans:
   - name: unifi_mgmt
     id: 100
+    ipv6:
+      prefix: fd56:6ac1:276c:1b59::/64
   - name: wifi_net
     id: 101
+    ipv6:
+      prefix: fd24:5a92:2123:2643::/64
+      subnet_id: "0xc"
   - name: dmz
     id: 102
+    ipv6:
+      prefix: fd0c:bff:4897:20f5::/64
+      subnet_id: "0xd"
 
 dhcp:
   ifaces:

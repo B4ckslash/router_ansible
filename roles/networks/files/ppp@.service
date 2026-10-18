@@ -1,7 +1,9 @@
 [Unit]
 Description=PPP link to %I
 Requires=systemd-networkd.service
+Requires=sys-subsystem-net-devices-wan.7.device
 After=systemd-networkd.service
+After=sys-subsystem-net-devices-wan.7.device
 
 [Service]
 ExecStart=/usr/sbin/pppd call %I nodetach

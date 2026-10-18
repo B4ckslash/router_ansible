@@ -1,0 +1,15 @@
+[Match]
+Type=ppp
+
+[Network]
+DHCP=ipv6
+KeepConfiguration=static
+DefaultRouteOnDevice=true
+
+[DHCPv6]
+PrefixDelegationHint=::/56
+WithoutRA=solicit
+UseDNS=false
+UseNTP=false
+UseHostname=false
+UseDomains=false

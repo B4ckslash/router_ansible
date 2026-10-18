@@ -14,3 +14,7 @@ routers:
       ip_suffix: 30
       vrrp_role: MASTER
       vrrp_priority: 255
+      ipv6:
+        prefix_delegation: true
+        lan_prefix: fd1e:23e6:7ce5:1fd0::/64
+        lan_subnet_id: '0xa'

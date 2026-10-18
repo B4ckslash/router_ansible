@@ -4,3 +4,24 @@ Type=vlan
 
 [Address]
 Address=10.1.{{ item.id }}.{{ ip_suffix }}/24
+{%if ipv6 is defined%}
+
+[Network]
+{%if item.ipv6.prefix is defined%}
+IPv6SendRA=true
+{%endif%}
+{%if (ipv6.prefix_delegation | default(false)) and item.ipv6.subnet_id is defined%}
+DHCPPrefixDelegation=true
+{%endif%}
+{%if (ipv6.prefix_delegation | default(false)) and item.ipv6.subnet_id is defined%}
+
+[DHCPPrefixDelegation]
+SubnetId={{ item.ipv6.subnet_id }}
+{%endif%}
+{%if item.ipv6.prefix is defined %}
+
+[IPv6Prefix]
+Prefix={{ item.ipv6.prefix }}
+Assign=true
+{%endif%}
+{%endif%}
