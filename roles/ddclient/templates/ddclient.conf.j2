@@ -23,12 +23,13 @@ mail-failure=root		# mail failed update msgs to root
 ssl=yes					# use ssl-support.  Works with
 						# ssl-library
             #
+
 ##
-## NameCheap (namecheap.com)
+## Cloudflare
 ##
-use=web, web=dynamicdns.park-your-domain.com/getip
-protocol=namecheap
-server=dynamicdns.park-your-domain.com
-login=hotw.club
-password={{ ddclient_pass }}
-dyndns #subdomain name; all other subdomains using DDNS just CNAME to this subdomain
+usev4=webv4, webv4=ip4only.me
+protocol=cloudflare
+zone=hotw.club
+login=token
+password={{ ddclient_pass.cloudflare }}
+dyndns.hotw.club #subdomain name; all other subdomains using DDNS just CNAME to this subdomain
